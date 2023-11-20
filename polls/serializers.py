@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import serializers
 from .models import Osoba, Stanowisko
 
@@ -18,8 +19,9 @@ class StanowiskoSerializer(serializers.Serializer):
 class OsobaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Osoba
-        fields = ['id', 'imie', 'nazwisko', 'plec', 'data_dodania', 'stanowisko']
-        read_only_fields = ['id']
+        fields = ['id', 'imie', 'nazwisko', 'plec', 'data_dodania', 'stanowisko', 'wlasciciel']
+        read_only_fields = ['id', 'wlasciciel']
+        wlasciciel = serializers.ReadOnlyField(source='User.username')
 
     def validate_imie(self, value):
         if not value.isalpha():
@@ -41,5 +43,6 @@ class OsobaSerializer(serializers.ModelSerializer):
         instance.plec = validated_data.get('plec', instance.plec)
         instance.stanowisko = validated_data.get('stanowisko', instance.stanowisko)
         instance.data_dodanie = validated_data.get('data_dodania', instance.data_dodania)
+        instance.wlasciciel = validated_data.get('wlasciciel', instance.wlasciciel)
         instance.save()
         return instance

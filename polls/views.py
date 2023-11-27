@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -11,7 +13,8 @@ from .serializers import OsobaSerializer, StanowiskoSerializer
 def index(request):
     return HttpResponse("Hello World. You are at the poll index.")
 
-api_view(['GET'])
+@api_view(['GET'])
+@permission_required('polls.view_stanowisko')
 def stanowisko_list(request):
     if request.method == 'GET':
         stanowiska = Stanowisko.objects.all()
@@ -52,6 +55,8 @@ def osoba_list(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def osoba_detail(request, pk):
+    if not request.user.has_perm('polls.view_osoba'):
+        raise PermissionDenied()
     try:
         osoba = Osoba.objects.get(pk=pk)
     except Osoba.DoesNotExist:
